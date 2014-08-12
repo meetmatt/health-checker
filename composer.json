@@ -1,5 +1,5 @@
 {
-	"name": "Health Checker",
+	"name": "meetmatt/hc",
 	"description": "Lightweight health checker written in PHP. Can check health of http services, popular databases (mysql, postgres) and redis.",
 	"license": "MIT",
 	"require": {
