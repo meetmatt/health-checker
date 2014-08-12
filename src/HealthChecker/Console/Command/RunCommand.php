@@ -43,7 +43,7 @@ class RunCommand extends Command
         $services = [];
 
         foreach ($config as $service) {
-            $services[] = ServiceFactory::create($service);
+            $services[$service['name']] = ServiceFactory::create($service);
         }
 
         if ($testOnly) {
@@ -51,11 +51,52 @@ class RunCommand extends Command
         }
 
         $result = [];
-        foreach ($services as $service) {
-            $result[] = $service->check();
+        foreach ($services as $name => $service) {
+            $result[$name] = $service->check();
         }
 
-        var_dump($result);
+        if ($input->getOption('output') === 'json') {
+            $this->printJson($result);
+        } else {
+            $this->printTsv($result);
+        }
+
+    }
+
+    protected function printTsv($res)
+    {
+        $result = [];
+
+        foreach ($res as $name => $errors) {
+            if (empty($errors)) {
+                $result[] = implode("\t", ['ok', $name, '']);
+            } else {
+                $result[] = implode("\t", ['fail', $name, $errors[0]['message']]);
+            }
+        }
+
+        echo implode("\n", $result) . "\n";
+    }
+
+    protected function printJson($res)
+    {
+        $result = [];
+
+        foreach ($res as $name => $errors) {
+            if (empty($errors)) {
+                $result[$name] = [
+                    'status' => 'ok',
+                    'details' => []
+                ];
+            } else {
+                $result[$name] = [
+                    'status' => 'fail',
+                    'details' => $errors
+                ];
+            }
+        }
+
+        echo json_encode($result, JSON_PRETTY_PRINT) . "\n";
     }
 
     protected function loadConfig($configFile)

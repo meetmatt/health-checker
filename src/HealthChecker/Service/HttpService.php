@@ -2,7 +2,8 @@
 
 namespace HealthChecker\Service;
 
-use Symfony\Component\DomCrawler\Crawler;
+use Buzz\Exception\ClientException;
+use HealthChecker\Configurator\Exception;
 
 class HttpService extends AbstractService
 {
@@ -12,6 +13,7 @@ class HttpService extends AbstractService
     protected $headers = [];
     protected $content = '';
     protected $options = [];
+    protected $timeout;
     protected $response;
 
     public function validateRequiredParams()
@@ -23,6 +25,13 @@ class HttpService extends AbstractService
         if ( ! isset($this->config['request']['url'])) {
             throw new Exception(sprintf("URL parameter is required in request params for service of type '%s'", $this->config['type']));
         }
+    }
+
+    public function getDefaultAssertions()
+    {
+        return [
+            'i_can_connect' => true
+        ];
     }
 
     public function init()
@@ -65,31 +74,40 @@ class HttpService extends AbstractService
 
         // get connection options
         if (isset($request['timeout'])) {
-            $this->options[CURLOPT_TIMEOUT] = floatval($request['timeout']);
+            $this->options[CURLOPT_TIMEOUT_MS] = $this->timeout = (int)$request['timeout'];
         }
         if (isset($request['follow_redirects'])) {
             $this->options[CURLOPT_FOLLOWLOCATION] = (bool)$request['follow_redirects'];
         }
     }
 
-    protected function getResponse()
+    public function assertICanConnect()
     {
-        if ( ! isset($this->response)) {
-            $request = new \Buzz\Message\Request($this->method, $this->path, $this->host);
-            $response = new \Buzz\Message\Response();
-            $client = new \Buzz\Client\Curl();
+        $request = new \Buzz\Message\Request($this->method, $this->path, $this->host);
+        $response = new \Buzz\Message\Response();
+        $client = new \Buzz\Client\Curl();
 
+        try {
             $client->send($request, $response, $this->options);
+        } catch (ClientException $e) {
 
-            $this->response = $response;
+            if ($e->getCode() === CURLE_OPERATION_TIMEOUTED) {
+                $this->errors['assertICanConnect'] = 'Timeout exceeded';
+
+                return false;
+            }
         }
 
-        return $this->response;
+        $this->response = $response;
     }
 
     public function assertStatusIs($expectedStatusCode)
     {
-        $actualStatusCode = $this->getResponse()->getStatusCode();
+        if ( ! isset($this->response)) {
+            return false;
+        }
+
+        $actualStatusCode = $this->response->getStatusCode();
 
         if ($actualStatusCode !== $expectedStatusCode) {
             $this->errors['assertStatusIs'] = sprintf('Expected status code is %d, actual status is %d', $expectedStatusCode, $actualStatusCode);
@@ -102,7 +120,11 @@ class HttpService extends AbstractService
 
     public function assertContentTypeIs($expectedContentType)
     {
-        $actualContentType = explode(';', $this->getResponse()->getHeader('Content-Type'))[0];
+        if ( ! isset($this->response)) {
+            return false;
+        }
+
+        $actualContentType = explode(';', $this->response->getHeader('Content-Type'))[0];
 
         if ($actualContentType !== $expectedContentType) {
             $this->errors['assertContentTypeIs'] = sprintf('Expected content type is %s, actual content type is %s', $expectedContentType, $actualContentType);
@@ -115,7 +137,11 @@ class HttpService extends AbstractService
 
     public function assertResponseTextContains(array $expectedStrings)
     {
-        $responseContent = $this->getResponse()->getContent();
+        if ( ! isset($this->response)) {
+            return false;
+        }
+
+        $responseContent = $this->response->getContent();
 
         foreach ($expectedStrings as $expectedString) {
             if (strpos($responseContent, $expectedString) === false) {

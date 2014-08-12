@@ -11,7 +11,7 @@
       password: secret
     follow_redirects: true
     # max time in seconds from starting send request to finishing receive response
-    timeout: 0.5
+    timeout: 500
   assertions:
     status_is: 200
     content_type_is: text/html

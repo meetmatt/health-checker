@@ -1,0 +1,29 @@
+---
+- name: secret panel login works
+  type: http
+  request:
+    method: post
+    url: http://snaf.me/login
+    headers:
+      accept: application/json
+    post_params:
+      login: mike
+      password: secret
+    follow_redirects: true
+    # max time in seconds from starting send request to finishing receive response
+    timeout: 0.5
+  assertions:
+    status_is: 200
+    content_type_is: text/html
+    response_text_contains: [ Logout, Profile ]
+
+- name: public frontend
+  type: http
+  request: { url: http://snaf.me/ }
+  assertions:
+    status_is: 200
+    response_text_contains: [ Welcome! ]
+
+- name: another site
+  type: http
+  request: { url: http://snaf.me:8080/ }

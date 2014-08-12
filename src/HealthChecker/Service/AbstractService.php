@@ -11,25 +11,16 @@ abstract class AbstractService
 
     public function __construct($config)
     {
-        $this->validateConfig($config);
+        if ( ! isset($config['name'])) {
+            throw new Exception("Name is required in service definition");
+        }
 
         $this->config = $config;
 
         $this->validateRequiredParams();
 
         $this->name = $config['name'];
-        $this->assertions = $config['assertions'];
-    }
-
-    public function validateConfig($config)
-    {
-        if ( ! isset($config['name'])) {
-            throw new Exception("Name is required in service definition");
-        }
-
-        if ( ! isset($config['assertions'])) {
-            throw new Exception(sprintf("At least one assertion is required in service '%s' definition", $config['name']));
-        }
+        $this->assertions = array_merge($this->getDefaultAssertions(), isset($config['assertions']) ? $config['assertions'] : []);
     }
 
     public function check()
@@ -43,11 +34,16 @@ abstract class AbstractService
             }
 
             if ( ! call_user_func([$this, $assertMethodName], $params)) {
+                $message = $this->getAssertionError($assertMethodName);
+                if ( ! $message) {
+                    continue;
+                }
+
                 $errors[] = [
                     'assertion' => [
                         $name => $params
                     ],
-                    'message' => $this->getAssertionError($assertMethodName)
+                    'message' => $message
                 ];
             }
         }
@@ -57,10 +53,11 @@ abstract class AbstractService
 
     protected function getAssertionError($assertMethodName)
     {
-        return $this->errors[$assertMethodName];
+        return isset($this->errors[$assertMethodName]) ? $this->errors[$assertMethodName] : false;
     }
 
     abstract public function validateRequiredParams();
+    abstract public function getDefaultAssertions();
     abstract public function init();
 
 }
