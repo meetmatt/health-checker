@@ -1,0 +1,51 @@
+{
+    "secret panel login works": {
+        "status": "ok",
+        "details": {}
+    },
+    "public frontend": {
+        "status": "fail",
+        "details": {
+            "assertion": {
+                "i_can_connect": true
+            },
+            "message": "timeout exceeded"
+        }
+    },
+    "unimportant sites": {
+        "status": "fail",
+        "details": {
+            "assertion": {
+                "status_is": 200
+            },
+            "message": "expected status is 200, actual status is 503"
+        }
+    },
+    "settings database": {
+        "status": "fail",
+        "details": {
+            "assertion": {
+                "i_can_connect": true
+            },
+            "message": "access denied for user 'mike'"
+        }
+    },
+    "master redis": {
+        "status": "fail",
+        "details": {
+            "assertion": {
+                "key_exists": ["key1", "key2"]
+            },
+            "message": "key 'key1' does not exist"
+        }
+    },
+    "redis slave 1": {
+        "status": "fail",
+        "details": {
+            "assertion": {
+                "is_slave_of": "master redis"
+            },
+            "message": "'redis slave 1' is not slave of 'master redis'"
+        }
+    }
+}

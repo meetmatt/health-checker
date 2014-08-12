@@ -1,0 +1,19 @@
+{
+	"name": "Health Checker",
+	"description": "Lightweight health checker written in PHP. Can check health of http services, popular databases (mysql, postgres) and redis.",
+	"license": "MIT",
+	"require": {
+		"symfony/console": "2.6.*@dev",
+		"symfony/yaml": "2.6.*@dev",
+		"symfony/dom-crawler": "2.6.*@dev"
+	},
+	"autoload": {
+		"psr-0": {
+			"HealthChecker": "src/"
+		}
+	},
+	"scripts": {
+		"post-install-cmd": "chmod +x bin/hc",
+		"post-update-cmd": "chmod +x bin/hc"
+	}
+}

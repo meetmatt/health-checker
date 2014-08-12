@@ -1,0 +1,6 @@
+ok	secret panel
+fail 	public frontend	fail	timeout exceeded
+fail 	unimportant sites	expected status is 200, actual status is 503
+fail 	settings database	access denied for user 'mike'
+fail 	master redis	key 'key1' does not exist
+fail 	redis slave 1	redis slave 1' is not slave of 'master redis'

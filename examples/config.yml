@@ -1,0 +1,59 @@
+---
+- name: secret panel login works
+  type: http
+  request:
+    method: post
+    url: https://secret-panel.example.org/login
+    headers:
+      accept: application/json
+    post_params:
+      login: mike
+      password: secret
+    follow_redirects: true
+    # max time in seconds from starting send request to finishing receive response
+    timeout: 0.5
+  assertions:
+    status_is: 200
+    content_type_is: text/html
+    response_text_contains: [ Logout, Profile ]
+
+- name: public frontend
+  type: http
+  request: { url: http://example.org/ }
+  assertions:
+    status_is: 200
+    response_text_contains: [ Welcome! ]
+
+- name: another site
+  type: http
+  request: { url: http://another.example.org:8080/ }
+
+- name: settings database
+  type: db
+  connection:
+    driver: mysql
+    host: settings.example.org
+    port: 3306
+    user: mike
+    pass: secret
+    connection_timeout: 2
+  assertions:
+    table_exists: ['settings', 'author', 'article', 'tag']
+    table_not_empty: ['settings']
+
+- name: master redis
+  type: redis
+  connection:
+    host: redis.example.org
+    port: 6379
+    auth: 9ouh4jasndfadfas
+    connection_timeout: 0.5
+  assertions:
+    key_exists: ['key1', 'key2']
+
+- name: redis slave 1
+  type: redis
+  connection: { host: slave1.example.org, auth: wedfasdfasdfsdf }
+  assertions:
+    is_slave_of: "master redis"
+    max_replicaition_lag: 2
