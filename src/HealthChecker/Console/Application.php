@@ -2,8 +2,9 @@
 
 namespace HealthChecker\Console;
 
-use HealthChecker\Command\Run;
+use HealthChecker\Console\Command;
 use Symfony\Component\Console\Application as ConsoleApplication;
+use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputInterface;
 
 class Application extends ConsoleApplication
@@ -21,10 +22,16 @@ class Application extends ConsoleApplication
         return 'run';
     }
 
+    protected function getDefaultInputDefinition()
+    {
+        return new InputDefinition();
+    }
+
     protected function getDefaultCommands()
     {
         return [
-            new Run()
+            new Command\HelpCommand(),
+            new Command\RunCommand()
         ];
     }
 
@@ -32,7 +39,6 @@ class Application extends ConsoleApplication
     {
         $inputDefinition = parent::getDefinition();
 
-        // clear out the normal first argument, which is the command name
         $inputDefinition->setArguments();
 
         return $inputDefinition;
