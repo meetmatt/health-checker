@@ -43,13 +43,19 @@ class RunCommand extends Command
         $services = [];
 
         foreach ($config as $service) {
-            $type = $service['type'];
-            $name = $service['name'];
-
-            $services[] = ServiceFactory::getFactory($type);
+            $services[] = ServiceFactory::create($service);
         }
 
-        var_dump($services);
+        if ($testOnly) {
+            exit();
+        }
+
+        $result = [];
+        foreach ($services as $service) {
+            $result[] = $service->check();
+        }
+
+        var_dump($result);
     }
 
     protected function loadConfig($configFile)

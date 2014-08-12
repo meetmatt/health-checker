@@ -2,22 +2,33 @@
 
 namespace HealthChecker\Service;
 
-abstract class ServiceFactory
+class ServiceFactory
 {
-    public static function getFactory($type)
+    public static function create(array $config)
     {
+        $type = $config['type'];
+
         switch (strtolower($type)) {
             case 'http':
-                return new HttpServiceFactory();
+                $service = new HttpService($config);
+                break;
 
+            /*
             case 'db':
-                return new DbServiceFactory();
+                $service = new DbService($name);
+                break;
 
             case 'redis':
-                return new RedisServiceFactory();
+                $service = new RedisService($name);
+                break;
+            */
 
             default:
                 throw new Exception(sprintf("Unknown service type '%s'", $type));
         }
+
+        $service->init($config);
+
+        return $service;
     }
 }

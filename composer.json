@@ -5,7 +5,8 @@
 	"require": {
 		"symfony/console": "2.6.*@dev",
 		"symfony/yaml": "2.6.*@dev",
-		"symfony/dom-crawler": "2.6.*@dev"
+		"symfony/dom-crawler": "2.6.*@dev",
+		"kriswallsmith/buzz": "dev-master"
 	},
 	"autoload": {
 		"psr-0": {
