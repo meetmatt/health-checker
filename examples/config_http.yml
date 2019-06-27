@@ -19,11 +19,11 @@
 
 - name: public frontend
   type: http
-  request: { url: http://snaf.me/ }
+  request: { url: http://google.com/ }
   assertions:
     status_is: 200
     response_text_contains: [ Welcome! ]
 
 - name: another site
   type: http
-  request: { url: http://snaf.me:8080/ }
+  request: { url: http://yandex.com/ }
